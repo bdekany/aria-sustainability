@@ -1,0 +1,35 @@
+Manufacturer,CPU Name,tdp
+Intel,Xeon E5-2666 v3,135
+Intel,Xeon E5-2676 v3,120
+Intel,Xeon E5-2686 v4,145
+Intel,Xeon E5-2650,96
+Intel,Xeon E5-2665,115
+Intel,Xeon E5-2670,115
+Intel,Xeon E5-2651 v2,95
+Intel,Xeon E5-2670 v2,115
+Intel,Xeon E5-2680 v2,115
+Intel,Xeon E7-8880 v3,150
+Intel,Xeon Platinum 8124M,240
+Intel,Xeon Platinum 8151,240
+Intel,Xeon Platinum 8175M,240
+Intel,Xeon Platinum 8176M,165
+Intel,Xeon Platinum 8252C,125
+Intel,Xeon Platinum 8259CL,125
+Intel,Xeon Platinum 8275CL,165
+Intel,Xeon Platinum 8375C,300
+AMD,EPYC 7571,120
+AMD,EPYC 7R32,280
+Amazon,Graviton,110
+Amazon,Graviton2,110
+Intel,Core i7-8700B,65
+AMD,EPYC 1st Gen,200
+AMD,EPYC 2nd Gen,240
+AMD,EPYC 3rd Gen,280
+Intel,Broadwell,145
+Intel,Cascade Lake,165
+Intel,Coffee Lake,95
+Intel,Haswell,160
+Intel,Skylake,165
+Unknown,Unknown,400
+Intel,Ivy Bridge,120
+Intel,Sandy Bridge,115
