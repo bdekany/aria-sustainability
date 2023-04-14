@@ -69,16 +69,20 @@ const sendAwsEmbodied = async (wavefrontClient:WavefrontDirectClient) => {
 
   fs.createReadStream(__dirname + '/inputs/coefficients-aws-embodied.csv')
   .pipe(parse({cast: true, columns: true}))
-  .on('data', (row: AwsEmbodied) => {
-    wavefrontClient.sendMetric(
-      'aria.sustainability.embodied',
-      Number(row['total']),
-      timestamp,
-      'aria.sustainability',
-      {
-          "InstanceType": row['type']
-      }
-    )
+  .on('data', async (row: AwsEmbodied) => {
+    try {
+      await wavefrontClient.sendMetric(
+        'aria.sustainability.embodied',
+        Number(row['total']),
+        timestamp,
+        'aria.sustainability',
+        {
+            "InstanceType": row['type']
+        }
+      )
+    } catch (error: any) {
+      console.log(chalk.red(`ERROR: ${Date()} AwsEmbodied ${row['type']}: ${error.message}`))
+    }
   })
   .on('end', () => {
     console.log(chalk.green(`${Date()} AWS Embodied sent`))
@@ -116,7 +120,7 @@ const sendAwsWatt = async (wavefrontClient: WavefrontDirectClient) => {
 
     fs.createReadStream(__dirname + "/inputs/aws-instances.csv")
     .pipe(parse({ cast: true, columns: true }))
-    .on("data", function (row: AwsInstance) {
+    .on("data", async (row: AwsInstance) => {
       let coreRatio = Number(row['Instance vCPU']) / Number(row['Platform Total Number of vCPU'])
       let cpuInfo: AwsCpu[] = awsCpus.filter((cpu: AwsCpu) => cpu['CPU Name'] == row['Platform CPU Name'])
       let tdp: Cpu[] = cpuTdp.filter((cpu :Cpu) => cpu['CPU Name'] == row['Platform CPU Name'])
@@ -124,15 +128,19 @@ const sendAwsWatt = async (wavefrontClient: WavefrontDirectClient) => {
       let total = coreRatio * cpuInfo[0]['Platform Number of CPU Socket(s)'] * tdp[0]['tdp']
       //console.log(total.toFixed(2))
 
-      wavefrontClient.sendMetric(
-        'aria.sustainability.pkgwatt',
-        Number(total.toFixed(3)),
-        timestamp,
-        'aria.sustainability',
-        {
-            "InstanceType": row['Instance type']
-        }
-    )
+      try {
+        await wavefrontClient.sendMetric(
+          'aria.sustainability.pkgwatt',
+          Number(total.toFixed(3)),
+          timestamp,
+          'aria.sustainability',
+          {
+              "InstanceType": row['Instance type']
+          }
+      )
+      } catch (error: any) {
+        console.log(chalk.red(`ERROR: ${Date()} AwsWatt ${row['Instance type']}: ${error.message}`))
+      }
 
     })
     .on("end", function() {

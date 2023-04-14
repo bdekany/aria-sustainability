@@ -33,17 +33,16 @@ export default class WavefrontLightClient {
     wavefrontToken: string
 
     constructor(config: WavefrontConfig) {
-        // Fix support Proxy
-        // if ( server startsWith proxy://)
-        // else
-        this.wavefrontUrl = `${config.server}/report`
-        this.wavefrontToken = config.token
-        // set the new accessToken as default for next axios call
-        axios.defaults.headers.common['Authorization'] = `Bearer ${this.wavefrontToken}`;
-
-        axios.defaults.headers.common['Content-Type'] = 'text/plain';
-
-
+        if ( config.server.startsWith('proxy://') ) {
+            this.wavefrontUrl = config.server.replace('proxy://', 'http://') + '/report'
+            this.wavefrontToken = ''
+        } else {
+            this.wavefrontUrl = `${config.server}/report`
+            this.wavefrontToken = config.token
+            // set the new accessToken as default for next axios call
+            axios.defaults.headers.common['Authorization'] = `Bearer ${this.wavefrontToken}`;
+            axios.defaults.headers.common['Content-Type'] = 'text/plain';
+        }
     }
 
     /**
@@ -119,6 +118,8 @@ export default class WavefrontLightClient {
                 process.exit(1)
             }
             throw error
+            // DEBUG
+            // console.log(error.message)
         }
     }
 

@@ -8,11 +8,11 @@ RUN npm clean-install && npm run build
 FROM node:lts-slim
 LABEL Brice DEKANY <dbrice@vmware.com>
 ENV NODE_ENV=production
-USER node
 
 WORKDIR /home/node/app
 
 COPY package*.json ./
-RUN npm clean-install --production
+RUN npm clean-install --omit=dev
 
-COPY --from=builder /home/node/app/build ./build
+COPY --from=builder  --chown=node:node  /home/node/app/build ./build
+USER node
