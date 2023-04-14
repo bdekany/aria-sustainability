@@ -10,11 +10,11 @@ import { convertTimeToMilliseconds } from './utils/utils'
 
 import datacenters from './assets/datacenters.json'
 
-const sendCabonIntensity = async (wavefrontClient: WavefrontDirectClient) => {
-    datacenters.data.map((dc) =>{
+const sendCabonIntensity = (wavefrontClient: WavefrontDirectClient) => {
+    datacenters.data.map(async (dc) =>{
         try {
-            wavefrontClient.sendMetric(
-                'aria.sustaiability.region_ci',
+            await wavefrontClient.sendMetric(
+                'aria.sustainability.region_ci',
                 Number(dc.staticCi),
                 null,
                 'aria.sustainability',
@@ -25,11 +25,12 @@ const sendCabonIntensity = async (wavefrontClient: WavefrontDirectClient) => {
                     "country": dc.country
                 }
             )
-
         } catch (error: any) {
-            console.log(chalk.red(`ERROR: ${Date.now()} ${dc.displayName}: ${error.message}`))
+            console.log(chalk.red(`ERROR: ${Date()} ${dc.displayName}: ${error.message}`))
         }
     })
+
+    console.log(chalk.green(`${Date()} Carbon Intensity Sent`))
 }
 
 
@@ -83,6 +84,7 @@ const sendCabonIntensity = async (wavefrontClient: WavefrontDirectClient) => {
         } catch (error: any) {
             console.log(error.response.data.message)
         } */
+        
         sendCabonIntensity(wavefrontClient)
 
         if (options.daemon) {

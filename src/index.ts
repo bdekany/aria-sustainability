@@ -8,7 +8,7 @@ import { Option, program } from 'commander'
 import { convertTimeToMilliseconds } from './utils/utils'
 
 import WavefrontDirectClient from './utils/wavefront-light-api'
-import type { AwsCpu, AzureCpu, AwsInstance, AzureInstance } from './cloud-carbon-footprint'
+import type { AwsCpu, AzureCpu, AwsInstance, AzureInstance, AwsEmbodied } from './cloud-carbon-footprint'
 
 type Cpu = {
   'Manufacturer': string,
@@ -43,6 +43,10 @@ const downloadFiles = async () => {
           url: "https://raw.githubusercontent.com/cloud-carbon-footprint/cloud-carbon-coefficients/main/data/aws-instances-cpus.csv"
       },
       {
+        file: "coefficients-aws-embodied.csv",
+        url: "https://raw.githubusercontent.com/cloud-carbon-footprint/cloud-carbon-coefficients/main/output/coefficients-aws-embodied.csv"
+      },
+      {
         file: "azure-instances.csv",
         url: "https://raw.githubusercontent.com/cloud-carbon-footprint/cloud-carbon-coefficients/main/data/azure-instances.csv"
       },
@@ -58,6 +62,27 @@ const downloadFiles = async () => {
     }
     
     await Promise.all(p)
+}
+
+const sendAwsEmbodied = async (wavefrontClient:WavefrontDirectClient) => {
+  let timestamp = Math.floor(new Date().getTime() / 1000)
+
+  fs.createReadStream(__dirname + '/inputs/coefficients-aws-embodied.csv')
+  .pipe(parse({cast: true, columns: true}))
+  .on('data', (row: AwsEmbodied) => {
+    wavefrontClient.sendMetric(
+      'aria.sustainability.embodied',
+      Number(row['total']),
+      timestamp,
+      'aria.sustainability',
+      {
+          "InstanceType": row['type']
+      }
+    )
+  })
+  .on('end', () => {
+    console.log(chalk.green(`${Date()} AWS Embodied sent`))
+  })
 }
 
 const sendAwsWatt = async (wavefrontClient: WavefrontDirectClient) => {
@@ -92,7 +117,6 @@ const sendAwsWatt = async (wavefrontClient: WavefrontDirectClient) => {
     fs.createReadStream(__dirname + "/inputs/aws-instances.csv")
     .pipe(parse({ cast: true, columns: true }))
     .on("data", function (row: AwsInstance) {
-      console.log(row['Instance type'])
       let coreRatio = Number(row['Instance vCPU']) / Number(row['Platform Total Number of vCPU'])
       let cpuInfo: AwsCpu[] = awsCpus.filter((cpu: AwsCpu) => cpu['CPU Name'] == row['Platform CPU Name'])
       let tdp: Cpu[] = cpuTdp.filter((cpu :Cpu) => cpu['CPU Name'] == row['Platform CPU Name'])
@@ -101,7 +125,7 @@ const sendAwsWatt = async (wavefrontClient: WavefrontDirectClient) => {
       //console.log(total.toFixed(2))
 
       wavefrontClient.sendMetric(
-        'aria.sustaiability.pkgwatt',
+        'aria.sustainability.pkgwatt',
         Number(total.toFixed(3)),
         timestamp,
         'aria.sustainability',
@@ -112,7 +136,7 @@ const sendAwsWatt = async (wavefrontClient: WavefrontDirectClient) => {
 
     })
     .on("end", function() {
-      //ok
+      console.log(chalk.green(`${Date()} AWS Watt sent`))
     })
 
 })
@@ -134,6 +158,7 @@ const options = program.opts()
 
   if ( options.update ){
     await downloadFiles()
+    console.log(chalk.green(`${Date()} Cloud Carbon Footprint Data updated`))
   }
 
   if ( !options.wavefrontHost) {
@@ -146,11 +171,13 @@ const options = program.opts()
   });
 
   sendAwsWatt(wavefrontClient)
+  sendAwsEmbodied(wavefrontClient)
 
   if (options.daemon) {
     const interval = convertTimeToMilliseconds('5m')
         setInterval(() => {
             sendAwsWatt(wavefrontClient)
+            sendAwsEmbodied(wavefrontClient)
         }, interval)  
     }
   

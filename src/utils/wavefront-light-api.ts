@@ -101,8 +101,7 @@ export default class WavefrontLightClient {
 
 
 
-    sendMetric(name: string, value: number, timestamp: (number|null), source: string, tags: Object) {
-    try {
+    async sendMetric(name: string, value: number, timestamp: (number|null), source: string, tags: Object) {
         var data = this.metricToLineData(
             name,
             value,
@@ -111,16 +110,16 @@ export default class WavefrontLightClient {
             tags
         )
 
-        axios.post(this.wavefrontUrl, data)
-
-    } catch (error: any) {
-        if (error.message) {
-            throw error.message
+        try {
+            let response = await axios.post(this.wavefrontUrl, data)
+            return response
+        } catch ( error: any) {
+            if (error.response?.status == 401 ) {
+                console.error('401 Authentication error')
+                process.exit(1)
+            }
+            throw error
         }
-        if (error.response.data.message) {
-            throw error.response.data.message
-        }
-    }
     }
 
 }

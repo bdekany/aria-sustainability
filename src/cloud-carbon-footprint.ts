@@ -14,8 +14,8 @@ export type AzureCpu = {
 export type AwsInstance = {
     'Instance type': string,
     'Release Date': string,
-    'Instance vCPU': string,
-    'Platform Total Number of vCPU': string,
+    'Instance vCPU': number,
+    'Platform Total Number of vCPU': number,
     'Platform CPU Name': string,
     'Instance Memory (in GB)': string,
     'Platform Memory (in GB)': string,
@@ -60,3 +60,13 @@ export type AzureInstance = {
     'Instance GPUs': string,
     'Platform GPU': string
   }
+
+export type AwsEmbodied = {
+  '': number,
+  'type': string,
+  'additional_memory': number,
+  'additional_storage': number,
+  'additional_cpus': number,
+  'additional_gpus': number,
+  'total': number
+}
