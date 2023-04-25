@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+secretGenerator:
+- name: wavefront-secret
+  files:
+  - api-token
+  - server-url
+  type: Opaque
+
+resources:
+- proxy-deployment.yaml
+- proxy-service.yaml
+- watt-job.yaml
+- ci-job.yaml

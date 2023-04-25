@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: proxy
+  name: wavefront-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: proxy
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: proxy
+    spec:
+      containers:
+      - name: wavefront-proxy
+        image: projects.registry.vmware.com/tanzu_observability/proxy:12.3
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: WAVEFRONT_URL
+          valueFrom:
+            secretKeyRef:
+              name: wavefront-secret
+              key: server-url
+        - name: WAVEFRONT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: wavefront-secret
+              key: api-token
+        ports:
+        - containerPort: 2878
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 500m
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 512Mi
+        securityContext:
+          privileged: false

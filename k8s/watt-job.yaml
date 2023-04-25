@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: watt-job
+spec:
+  schedule: "*/10 * * * *"
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          containers:
+          - name: watt-job
+            image: ghcr.io/bdekany/aria-sustainability:0.0.1
+            imagePullPolicy: IfNotPresent
+            command:
+            - node
+            - build/index.js
+            - -u
+            env:
+            - name: WAVEFRONT_HOST
+              value: "proxy://wavefront-proxy:2878"
+            resources:
+              requests:
+                memory: 64Mi
+                cpu: 250m
+              limits:
+                memory: 128Mi
+                cpu: 500m
+          restartPolicy: OnFailure
